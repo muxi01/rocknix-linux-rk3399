@@ -1044,6 +1044,18 @@ config DRM_PANEL_SIMPLE
 	  that it can be automatically turned off when the panel goes into a
 	  low power state.
 
+config DRM_PANEL_SIMPLE_SOGOU_TRANSLATER
+	tristate "support for simple panels for sogou translater "
+	depends on OF
+	depends on BACKLIGHT_CLASS_DEVICE
+	depends on PM
+	select VIDEOMODE_HELPERS
+	help
+	  DRM panel driver for dumb non-eDP panels that need at most a regulator
+	  and a GPIO to be powered up. Optionally a backlight can be attached so
+	  that it can be automatically turned off when the panel goes into a
+	  low power state.
+
 config DRM_PANEL_SUMMIT
 	tristate "Apple Summit display panel"
 	depends on OF
