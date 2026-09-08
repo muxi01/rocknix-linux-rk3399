@@ -901,7 +901,11 @@
 	usb-role-switch;
 };
 
-
+#if 0
+&rng {
+	status = "okay";
+};
+#endif 
 
 &vopl {
 	status = "okay";
@@ -912,36 +916,56 @@
 };
 
 
-
 &mipi_dsi {
 	clock-master;
+	#address-cells = <1>;
+	#size-cells = <0>;
 	status = "okay";
-	rockchip,lane-rate = <155>;
-	
+
 	panel@0 {
-		compatible = "hannstar,hsd060bhw4", "himax,hx8394";
-		reg = <0>;
+		compatible = "sogou,translater-rk3399";
 		backlight = <&backlight>;
+		reg = <0>;
+		power-supply = <&vcc2v8_lcd>;
+		enable-gpios = <&gpio3 RK_PA4 GPIO_ACTIVE_HIGH>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&display_rst_pin>;
-		reset-gpios = <&gpio3 RK_PA4 GPIO_ACTIVE_LOW>;
-		vcc-supply = <&vcc2v8_lcd>;
-
 		port {
+			#address-cells = <1>;
+			#size-cells = <0>;
 			mipi_in_panel: endpoint {
 				remote-endpoint = <&mipi_out_panel>;
 			};
 		};
 	};
+};
 
-	ports {
-		mipi_out: port@1 {
-			reg = <1>;
-			#address-cells = <1>;
-			#size-cells = <0>;
-			mipi_out_panel: endpoint {
-				remote-endpoint = <&mipi_in_panel>;
-			};
-		};
+&mipi_out {
+	reg = <1>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	mipi_out_panel: endpoint {
+		remote-endpoint = <&mipi_in_panel>;
 	};
+};
+
+&mipi_dphy_rx0 {
+	status = "okay";
+};
+
+
+&vopb {
+	status = "okay";
+};
+
+&vopb_mmu {
+	status = "okay";
+};
+
+&vopl {
+	status = "okay";
+};
+
+&vopl_mmu {
+	status = "okay";
 };

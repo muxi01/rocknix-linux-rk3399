@@ -1,80 +1,37 @@
 // SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2017 Fuzhou Rockchip Electronics Co., Ltd.
+ */
+
 /dts-v1/;
+#include <dt-bindings/input/linux-event-codes.h>
+#include <dt-bindings/interrupt-controller/irq.h>
 #include <dt-bindings/pwm/pwm.h>
-#include <dt-bindings/input/input.h>
-#include <dt-bindings/display/mipi_dsi.h>
+#include <dt-bindings/usb/pd.h>
 #include "rk3399.dtsi"
-#include "rk3399-opp.dtsi"
-#include "rk3399-linux.dtsi"
 
 #define BLUETOOTH_ON  1
 #define GPU_STRATEGY  0 /*1:Panfrost GPU  0:Midgard GPU*/
 #define CAMERA_ONLINE 0
-#define BAT_ALWAYS_CHARGE 1
+#define MAINLINE_LINUX	  1
 / {
-	model = "Sogo Translation Bao";
-	compatible = "SogoTranslation,rk3399", "rockchip,rk3399";
+	model = "Firefly-RK3399 Board";
+	compatible = "firefly,firefly-rk3399", "rockchip,rk3399";
+
+	aliases {
+		mmc2 = &sdio0;
+		mmc1 = &sdmmc;
+		mmc0 = &sdhci;
+	};
 
 	chosen {
-		bootargs = "earlycon=uart8250,mmio32,0xff1a0000 video=DSI-1:480x800 console=ttyFIQ0  console=tty1 rw root=/dev/mmcblk0p4 rootfstype=ext4 rootwait";
+		stdout-path = "serial2:1500000n8";
 	};
 
-	//DONE
-	gpio-keys {
-		compatible = "gpio-keys";
-		#address-cells = <1>;
-		#size-cells = <0>;
-		autorepeat;
-		pinctrl-names = "default";
-		pinctrl-0 = <&vol_up_pin>,<&vol_dn_pin>,<&power_pin>,<&camera_pin>,<&trans_a_pin>,<&trans_b_pin>;
-
-		key-vol-up {
-			debounce-interval = <100>;
-			gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_LOW>;
-			label = "GPIO Key V+";
-			linux,code = <KEY_VOLUMEUP>;
-		};
-
-		key-vol-dn {
-			debounce-interval = <100>;
-			gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
-			label = "GPIO Key V-";
-			linux,code = <KEY_VOLUMEDOWN>;
-		};
-
-		key-power {
-			debounce-interval = <100>;
-			gpios = <&gpio0 RK_PA5 GPIO_ACTIVE_LOW>;
-			label = "GPIO Key Power";
-			linux,code = <KEY_POWER>;
-		};
-
-		key-camera {
-			debounce-interval = <100>;
-			gpios = <&gpio1 RK_PA1 GPIO_ACTIVE_LOW>;
-			label = "GPIO key camera";
-			linux,code = <KEY_ENTER>;
-		};
-
-		key-trans-a {
-			debounce-interval = <100>;
-			gpios = <&gpio1 RK_PC7 GPIO_ACTIVE_LOW>;
-			label = "GPIO key trans a";
-			linux,code = <KEY_UP>;
-		};
-
-		key-trans-b {
-			debounce-interval = <100>;
-			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
-			label = "GPIO Key trans b";
-			linux,code = <KEY_DOWN>;
-		};
-	};
-
-
-	//DONE
+	//DONE 
 	backlight: backlight {
 		compatible = "pwm-backlight";
+		enable-gpios = <&gpio1 RK_PB5 GPIO_ACTIVE_HIGH>;
 		pwms = <&pwm0 0 25000 0>;
 		brightness-levels = <
 			  0   1   2   3   4   5   6   7
@@ -110,7 +67,6 @@
 			240 241 242 243 244 245 246 247
 			248 249 250 251 252 253 254 255>;
 		default-brightness-level = <250>;
-		enable-gpios = <&gpio1 RK_PB5 GPIO_ACTIVE_HIGH>;
 	};
 
 	dc_5v: dc-5v {
@@ -121,6 +77,16 @@
 		regulator-min-microvolt = <5000000>;
 		regulator-max-microvolt = <5000000>;
 	};
+
+    vcc2v8_lcd: regulator-vcc2v8-lcd {
+        compatible = "regulator-fixed";
+        regulator-name = "vcc2v8_lcd";
+		regulator-always-on;
+		regulator-boot-on;
+        regulator-min-microvolt = <2800000>;
+        regulator-max-microvolt = <2800000>;
+        vin-supply = <&dc_5v>;
+    };
 
 
 	//DONE
@@ -196,12 +162,66 @@
 		reset-gpios = <&gpio0 RK_PB2 GPIO_ACTIVE_LOW>;
 	};
 
+	//DONE 
+	gpio-keys {
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		autorepeat;
+		pinctrl-names = "default";
+		pinctrl-0 = <&vol_up_pin>,<&vol_dn_pin>,<&power_pin>,<&camera_pin>,<&trans_a_pin>,<&trans_b_pin>;
+
+		key-vol-up {
+			debounce-interval = <100>;
+			gpios = <&gpio1 RK_PB2 GPIO_ACTIVE_LOW>;
+			label = "GPIO Key V+";
+			linux,code = <KEY_VOLUMEUP>;
+		};
+
+		key-vol-dn {
+			debounce-interval = <100>;
+			gpios = <&gpio1 RK_PB0 GPIO_ACTIVE_LOW>;
+			label = "GPIO Key V-";
+			linux,code = <KEY_VOLUMEDOWN>;
+		};
+
+		key-power {
+			debounce-interval = <100>;
+			gpios = <&gpio0 RK_PA5 GPIO_ACTIVE_LOW>;
+			label = "GPIO Key Power";
+			linux,code = <KEY_POWER>;
+		};
+
+		key-camera {
+			debounce-interval = <100>;
+			gpios = <&gpio1 RK_PA1 GPIO_ACTIVE_LOW>;
+			label = "GPIO key camera";
+			linux,code = <KEY_ENTER>;
+		};
+
+		key-trans-a {
+			debounce-interval = <100>;
+			gpios = <&gpio1 RK_PC7 GPIO_ACTIVE_LOW>;
+			label = "GPIO key trans a";
+			linux,code = <KEY_UP>;
+		};
+
+		key-trans-b {
+			debounce-interval = <100>;
+			gpios = <&gpio1 RK_PC2 GPIO_ACTIVE_LOW>;
+			label = "GPIO Key trans b";
+			linux,code = <KEY_DOWN>;
+		};
+	};
+
 	//DONE
 	es8316-sound {
 		compatible = "simple-audio-card";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,name = "rockchip,es8316-codec";
 		simple-audio-card,mclk-fs = <256>;
+
+		status = "disabled";
 
 		simple-audio-card,widgets =
 			"Microphone", "Mic1 Jack",
@@ -224,7 +244,6 @@
 			sound-dai = <&es8316>;
 		};
 	};
-
 };
 
 &cpu_l0 {
@@ -255,16 +274,13 @@
 	status = "okay";
 };
 
-&pwm0 {
-	status = "okay";
-};
 
 &gpu {
 #if GPU_STRATEGY
 	compatible = "rockchip,rk3399-mali", "arm,mali-t860";
 #endif 
-	status = "okay";
 	mali-supply = <&vdd_gpu>;
+	status = "okay";
 };
 
 
@@ -548,6 +564,7 @@
 };
 
 
+
 &i2c1 {
 	status = "okay";
 	clock-frequency = <400000>;
@@ -561,65 +578,9 @@
 		clocks = <&cru SCLK_I2S_8CH_OUT>;
 		clock-names = "mclk";
 		pinctrl-names = "default";
-		pinctrl-0 = <&i2s_8ch_mclk>, <&speaker_pin>;
+		pinctrl-0 = <&i2s_8ch_mclk_pin>, <&speaker_pin>;
 		spk-con-gpio = <&gpio4 RK_PD4 GPIO_ACTIVE_HIGH>;
 	};
-
-#if CAMERA_ONLINE
-	vm149c: vm149c@0c {
-		compatible = "silicon touch,vm149c";
-		status = "okay";
-		reg = <0x0c>;
-		rockchip,camera-module-index = <0>;
-		rockchip,camera-module-facing = "back";
-	};
-#endif 
-
-#if CAMERA_ONLINE
-	ov8858: ov8858@36 {
-		status = "okay";
-		compatible = "ovti,ov8858";
-		reg = <0x36>;
-#else 
-	ov8858: ov8858@35 {
-		status = "okay";
-		compatible = "ovti,ov8858";
-		reg = <0x35>;
-#endif 
-		clocks = <&cru SCLK_CIF_OUT>;
-		clock-names = "xvclk";
-		pinctrl-0 = <&cif_clkout>,<&camera_pwr>,<&camera_rst>,<&camera_pdn>;
-		
-		avdd-supply = <&vcc1v8_dvp>;
-		rockchip,camera-module-debug-freq = <1>;
-		rockchip,camera-module-index = <1>;
-		rockchip,camera-module-facing = "front";
-		rockchip,camera-module-name = "JSD3425-C1";
-		rockchip,camera-module-lens-name = "JSD3425-C1";
-
-		power-gpios = <&gpio1 RK_PA2 GPIO_ACTIVE_HIGH>;
-		pwdn-gpios = <&gpio2 RK_PD4 GPIO_ACTIVE_HIGH>;
-		reset-gpios = <&gpio2 RK_PD3 GPIO_ACTIVE_HIGH>;
-		pinctrl-names = "rockchip,camera_default";
-		
-#if CAMERA_ONLINE
-		/* reset-gpios = <>; */
-		/*	avdd-supply = <>; */
-		/*	dovdd-supply = <>; */
-		/*	dvdd-supply = <>; */
-		reset-gpios = <&gpio2 10 GPIO_ACTIVE_HIGH>;
-		pwdn-gpios = <&gpio4 29 GPIO_ACTIVE_HIGH>;
-		pinctrl-names = "rockchip,camera_default";
-		port {
-			ucam_out1: endpoint {
-				//remote-endpoint = <&mipi_in_ucam0>;
-				remote-endpoint = <&mipi_in_ucam1>;
-				data-lanes = <1 2>;
-			};
-		};
-#endif 
-	};
-
 };
 
 &i2c4 {
@@ -628,7 +589,6 @@
 	i2c-scl-falling-time-ns = <40>;
 	status = "okay";
 };
-
 
 &i2c5 {
 	clock-frequency = <400000>;
@@ -651,7 +611,6 @@
 	};
 };
 
-
 &i2s0 {
 	rockchip,i2s-broken-burst-len;
 	rockchip,playback-channels = <8>;
@@ -668,7 +627,6 @@
 };
 
 &i2s2 {
-	#sound-dai-cells = <0>;
 	status = "okay";
 };
 
@@ -680,10 +638,12 @@
 	gpio1830-supply = <&vcc_3v0>;
 };
 
+
 &pmu_io_domains {
 	status = "okay";
 	pmu1830-supply = <&vcc_1v8>;
 };
+
 
 &pinctrl {
 	display {
@@ -701,6 +661,12 @@
 
 		touch_irq_pin: touch-irq-pin {
 			rockchip,pins = <3 RK_PB5 RK_FUNC_GPIO &pcfg_pull_up>;
+		};
+	};
+
+	i2s1 {
+		i2s_8ch_mclk_pin: i2s-8ch-mclk-pin {
+			rockchip,pins = <4 RK_PA0 1 &pcfg_pull_none>;
 		};
 	};
 
@@ -807,6 +773,11 @@
 	};
 };
 
+
+&pwm0 {
+	status = "okay";
+};
+
 &pwm2 {
 	status = "okay";
 };
@@ -815,6 +786,7 @@
 	vref-supply = <&vcc1v8_s0>;
 	status = "okay";
 };
+
 
 &sdio0 {
 	supports-sdio;
@@ -884,14 +856,16 @@
 	status = "okay";
 };
 
+
+
 &sdhci {
 	bus-width = <8>;
 	mmc-hs400-1_8v;
 	mmc-hs400-enhanced-strobe;
 	non-removable;
-	keep-power-in-suspend;
 	status = "okay";
 };
+
 
 &tsadc {
 	/* tshut mode 0:CRU 1:GPIO */
@@ -901,6 +875,7 @@
 	rockchip,hw-tshut-temp = <110000>;
 	status = "okay";
 };
+
 
 
 &u2phy0 {
@@ -922,14 +897,15 @@
 	maximum-speed = "high-speed";
 	phys = <&u2phy0_otg>;
     phy-names = "usb2-phy";
-	dr_mode = "otg";
+	dr_mode = "peripheral";
 	usb-role-switch;
 };
 
-
+#if 0
 &rng {
 	status = "okay";
 };
+#endif 
 
 &vopl {
 	status = "okay";
@@ -940,24 +916,18 @@
 };
 
 
-&display_subsystem {
-	status = "okay";
-};
-
-&route_dsi {
-	status = "okay";
-};
-
-
 &mipi_dsi {
-	status = "okay";
 	clock-master;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "okay";
 
-	mipi_panel: panel@0 {
+	panel@0 {
 		status = "okay";
 		reg = <0>;
 		backlight = <&backlight>;
 		compatible = "simple-panel-dsi";
+		power-supply = <&vcc2v8_lcd>;
 		pinctrl-names = "default";
 		pinctrl-0 = <&display_rst_pin>;
 		reset-gpios = <&gpio3 RK_PA4 GPIO_ACTIVE_LOW>;
@@ -973,7 +943,9 @@
 		dsi,format = <0>;
 		dsi,lanes  = <2>;
 
-		/* data_type delay_ms payload_lenth payload */
+		width-mm = <68>;
+		height-mm = <121>;
+		bpc = <8>;
 
 		panel-init-sequence = [
 			39 00 04 b9 ff 83 79 
@@ -1046,26 +1018,46 @@
 				pixelclk-active = <0x00>;
 			};
 		};
-
-		ports {
+		
+		port {
 			#address-cells = <1>;
 			#size-cells = <0>;
-
-			port@0 {
-				reg = <0>;
-				mipi_in_panel: endpoint {
-					remote-endpoint = <&mipi_out_panel>;
-				};
+			mipi_in_panel: endpoint {
+				remote-endpoint = <&mipi_out_panel>;
 			};
 		};
 	};
+};
 
-	ports {
-		mipi_out: port@1 {
-			reg = <1>;
-			mipi_out_panel: endpoint {
-				remote-endpoint = <&mipi_in_panel>;
-			};
-		};
+&mipi_out {
+	reg = <1>;
+	#address-cells = <1>;
+	#size-cells = <0>;
+	mipi_out_panel: endpoint {
+		remote-endpoint = <&mipi_in_panel>;
 	};
+};
+
+&mipi_dphy_rx0 {
+	status = "okay";
+};
+
+&mipi_dsi1 {
+	status = "okay";
+};
+
+&vopb {
+	status = "okay";
+};
+
+&vopb_mmu {
+	status = "okay";
+};
+
+&vopl {
+	status = "okay";
+};
+
+&vopl_mmu {
+	status = "okay";
 };
