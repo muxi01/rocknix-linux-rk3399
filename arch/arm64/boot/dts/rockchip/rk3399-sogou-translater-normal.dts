@@ -13,7 +13,6 @@
 #define BLUETOOTH_ON  1
 #define GPU_STRATEGY  0 /*1:Panfrost GPU  0:Midgard GPU*/
 #define CAMERA_ONLINE 0
-#define SOUND_CARD	  0
 #define MAINLINE_LINUX	  1
 / {
 	model = "Firefly-RK3399 Board";
@@ -215,15 +214,15 @@
 		};
 	};
 
-#if SOUND_CARD
 	//DONE
 	es8316-sound {
 		compatible = "simple-audio-card";
 		simple-audio-card,format = "i2s";
 		simple-audio-card,name = "rockchip,es8316-codec";
 		simple-audio-card,mclk-fs = <256>;
-		status = "okay";
 
+		status = "disabled";
+#if 0
 		simple-audio-card,widgets =
 			"Microphone", "Mic1 Jack",
 			"Microphone", "Mic2 Jack",
@@ -244,8 +243,8 @@
 		simple-audio-card,codec {
 			sound-dai = <&es8316>;
 		};
-	};
 #endif 
+	};
 };
 
 
@@ -573,7 +572,7 @@
 	clock-frequency = <400000>;
 	i2c-scl-rising-time-ns = <300>;
 	i2c-scl-falling-time-ns = <30>;
-#if SOUND_CARD
+#if 0
 	es8316: es8316@10 {
 		#sound-dai-cells = <0>;
 		compatible = "everest,es8316";

@@ -122,7 +122,7 @@ mount_common() {
 
   for i in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15; do
     ERR_ENV=1
-
+    echo "mount_common: mount ${MOUNT_OPTIONS} $1 $2 >&${SILENT_OUT} 2>&1" >/dev/console
     mount ${MOUNT_OPTIONS} $1 $2 >&${SILENT_OUT} 2>&1
     [ "$?" -eq "0" ] && ERR_ENV=0 && break
 
@@ -130,7 +130,7 @@ mount_common() {
   done
   [ "${ERR_ENV}" -eq "0" ] && return 0
   echo "Unable to find $1, powering off and on should correct it." >/dev/console
-  StartProgress countdown "Power off in 3s... " 3 "NOW"
+  StartProgress countdown "Power off in 20s... " 20 "NOW"
   poweroff
 }
 
@@ -758,9 +758,13 @@ mount_storage() {
       fi
     fi
 
-    if [ -f /flash/mount-storage.sh ]; then
-      . /flash/mount-storage.sh
+    if [ -f "/flash/mount-storage.sh" ]; then
+      echo "execute /flash/mount-storage.sh" > /dev/console
+      cp /flash/mount-storage.sh /tmp/mount-storage.sh
+      chmod +x /tmp/mount-storage.sh
+      . /tmp/mount-storage.sh
     else
+      echo "mount $disk to /storage" > /dev/console
       mount_part "$disk" "/storage" "rw,noatime"
     fi
   else
@@ -1307,6 +1311,7 @@ for BOOT_STEP in \
     check_update \
     prepare_sysroot 
 do
+  echo "init: ${BOOT_STEP}" >/dev/console
   ${BOOT_STEP}
   [ -n "${DEBUG}" ] && break_after ${BOOT_STEP}
 done
