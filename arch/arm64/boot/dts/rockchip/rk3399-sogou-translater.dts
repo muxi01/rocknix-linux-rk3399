@@ -919,7 +919,8 @@
 	rockchip,lane-rate = <155>;
 	
 	panel@0 {
-		compatible = "hannstar,hsd060bhw4", "himax,hx8394";
+		compatible = "hannstar,hsd060bhw4-45fps", "himax,hx8394";
+	//	compatible = "hannstar,hsd060bhw4-30fps", "himax,hx8394";
 		reg = <0>;
 		backlight = <&backlight>;
 		pinctrl-names = "default";
