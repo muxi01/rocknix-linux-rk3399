@@ -10,14 +10,15 @@
 #include <dt-bindings/usb/pd.h>
 #include "rk3399.dtsi"
 
-#define BLUETOOTH_ON  1
+
 #define GPU_STRATEGY  0 /*1:Panfrost GPU  0:Midgard GPU*/
 #define CAMERA_ONLINE 0
 #define SOUND_CARD	  0
-#define MAINLINE_LINUX	  1
+#define WIFI_BLUE 	  1
+#define BAT_ALWAYS_CHARGE 0
 / {
 	model = "Firefly-RK3399 Board";
-	compatible = "firefly,firefly-rk3399", "rockchip,rk3399";
+	compatible = "sogou,translater-rk3399", "rockchip,rk3399";
 
 	aliases {
 		mmc2 = &sdio0;
@@ -809,6 +810,7 @@
 	sd-uhs-sdr104;
 	status = "okay";
 
+#if WIFI_BLUE
 	#address-cells = <1>;
 	#size-cells = <0>;
 	brcmf: wifi@1 {
@@ -821,6 +823,8 @@
 		pinctrl-names = "default";
 		pinctrl-0 = <&wifi_host_wake_l>;
 	};
+#endif 
+
 };
 
 
@@ -828,7 +832,7 @@
 	pinctrl-names = "default";
 	pinctrl-0 = <&uart0_xfer &uart0_cts &uart0_rts>;
 	status = "okay";
-
+#if WIFI_BLUE
 	bluetooth {
 		compatible = "brcm,bcm43438-bt";
 	//	clocks = <&rk818 1>;
@@ -843,6 +847,8 @@
 		vbat-supply = <&vcc3v3_sys>;
 		vddio-supply = <&vcc_1v8>;
 	};
+#endif 
+
 };
 
 
